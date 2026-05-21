@@ -3,7 +3,8 @@
 
 > Evolução do [Olimpo Engine V1](https://github.com/proteumetamorfo-blip/oleoduto-de-seguranca).
 > Desenvolvido inteiramente via dispositivo móvel (Android + Termux),
-> sem infraestrutura profissional, sem IDE, sem computador.
+> Esse é o Dashboard do Olimpo Engine: https://proteumetamorfo-blip.github.io/olimpo-engine-V2/
+> O dashborard mostra registro de um ataque simulado. (Foram simulado um total de 97 tentativas de usuários malioso e usuários legítimos misturados. O código conseguiu captar todos os anômalos que implementei.
 
 ---
 
