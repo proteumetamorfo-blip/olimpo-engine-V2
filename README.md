@@ -1,7 +1,7 @@
 # ⚡ Olimpo Engine
 ### Business Intelligence Automation Backend — IDS de Nível de Aplicação
 
-> Evolução do [Olimpo Engine](https://github.com/proteumetamorfo-blip/oleoduto-de-seguranca).
+> [Olimpo Engine]
 > Desenvolvido inteiramente via dispositivo móvel (Android + Termux),
 > Esse é o Dashboard do Olimpo Engine: https://proteumetamorfo-blip.github.io/olimpo-engine-V2/
 > O dashborard mostra registro de um ataque simulado. (Foram simulado um total de 97 tentativas de usuários malioso e usuários legítimos misturados. O código conseguiu captar todos os anômalos que implementei.
