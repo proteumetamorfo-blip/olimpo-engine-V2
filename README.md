@@ -60,12 +60,12 @@ BLACKLIST GERADA:
 AMEAÇAS IDS:
   [HIGH]   104.21.45.33   → MALICIOUS_UA  (sqlmap detectado)
   [MEDIUM] 89.248.172.16  → ROUTE_SCAN    (/wp-admin, /.env, /phpmyadmin)
-
+```
 *Para melhorar o entendendo do dashboard acesse o link: https://proteumetamorfo-blip.github.io/olimpo-engine/*
 ```
 # Estrutura do projeto
 
-```
+
 olimpo-engine-V2/
 ├── pipeline.py            ← orquestrador principal (modo batch)
 ├── daemon.py              ← modo daemon (tempo real)
@@ -98,29 +98,36 @@ olimpo-engine-V2/
 
 **Dependências externas: zero.**
 
-
+```
 # Como rodar o Olimpo Engine.
 
 ```bash
 # Pré-requisito no Termux
+
 pkg install python
 
 # 1. Gerar logs simulados
+
 timeout 15 python tools/log_generator.py --speed slow
 
 # 2. Processar e detectar
+
 python pipeline.py
 
 # 3. Ver painel de resultados
+
 python dashboard.py --once
-```
+
 
 # Modo tempo real (duas sessões)
+
 ```bash
 # Sessão 1
+
 python daemon.py
 
 # Sessão 2
+
 python tools/log_generator.py --speed normal
 ```
 
@@ -128,7 +135,7 @@ python tools/log_generator.py --speed normal
 ## Regras IDS implementadas
 
 | Regra | O que detecta | Severidade |
-|-------|---------------|------------|
+
 | `RATE_LIMIT` | Mesmo IP acima do limite na janela de tempo | CRITICAL |
 | `PATH_TRAVERSAL` | `/../`, `/etc/passwd`, `/.git/config` | HIGH |
 | `ROUTE_SCAN` | `/wp-admin`, `/.env`, `/phpmyadmin` | MEDIUM |
