@@ -1,26 +1,25 @@
 # ⚡ Olimpo Engine
-### Business Intelligence Automation Backend — IDS de Nível de Aplicação
 
-> [Olimpo Engine]
-> Desenvolvido inteiramente via dispositivo móvel (Android + Termux),
-> Esse é o Dashboard do Olimpo Engine: https://proteumetamorfo-blip.github.io/olimpo-engine-V2/
+# Business Intelligence Automation Backend — IDS de Nível de Aplicação
+
+> Desenvolvido inteiramente via (Android + Termux),
+> Esse é o Dashboard do Olimpo Engine: https://proteumetamorfo-blip.github.io/olimpo-engine/
 > O dashborard mostra registro de um ataque simulado. (Foram simulado um total de 97 tentativas de usuários malioso e usuários legítimos misturados. O código conseguiu captar todos os anômalos que implementei.
 
 
-
-## O Problema
+## O Problema que me motivou a criar o Olímpo
 
 Firewalls tradicionais protegem portas e protocolos.
 Eles não enxergam **comportamento**.
 
 Um atacante que tenta 50 logins errados pela porta 443 passa pelo firewall
-de rede sem ser detectado — porque a porta está aberta e o protocolo é válido.
+de rede sem ser detectado, porque a porta está aberta e o protocolo é válido.
 
 O Olimpo Engine resolve isso na camada de aplicação: analisa o **padrão**
 das requisições, não apenas se elas chegaram.
 
 
-## O que o sistema faz
+## O Olimpo Engine trabalha assim:
 
 ```
 EVENTOS BRUTOS
@@ -49,9 +48,8 @@ EVENTOS BRUTOS
   DASHBOARD + RELATÓRIO HTML
 ```
 
----
 
-## Resultados reais da simulação
+## Resultados reais da simulação apresentada no dashboard.
 
 ```
 Total eventos processados:   92
@@ -70,7 +68,6 @@ AMEAÇAS IDS:
   [MEDIUM] 89.248.172.16  → ROUTE_SCAN    (/wp-admin, /.env, /phpmyadmin)
 ```
 
----
 
 ## Estrutura do projeto
 
@@ -94,7 +91,6 @@ olimpo-engine-V2/
     └── report_exporter.py ← exportação de relatório em HTML
 ```
 
----
 
 ## Tecnologias
 
@@ -108,9 +104,8 @@ olimpo-engine-V2/
 
 **Dependências externas: zero.**
 
----
 
-## Como rodar
+## Como rodar o Olimpo Engine.
 
 ```bash
 # Pré-requisito no Termux
@@ -135,7 +130,6 @@ python daemon.py
 python tools/log_generator.py --speed normal
 ```
 
----
 
 ## Regras IDS implementadas
 
@@ -147,7 +141,6 @@ python tools/log_generator.py --speed normal
 | `MALICIOUS_UA` | sqlmap, nikto, masscan, gobuster | HIGH |
 | `METHOD_ABUSE` | DELETE, TRACE em rotas comuns | MEDIUM |
 
----
 
 ## Evolução em relação ao V1
 
@@ -159,9 +152,9 @@ python tools/log_generator.py --speed normal
 | Relatório no terminal | Dashboard CLI + relatório HTML |
 | Sem gerador de logs | Gerador de tráfego com ataques simulados |
 
----
 
-## O que falta para produção
+
+## O que falta para torna o Olimpo Engine mais competente:
 
 - VPS Linux com Nginx em formato JSON
 - Daemon systemd para processo ativo 24/7
@@ -170,17 +163,11 @@ python tools/log_generator.py --speed normal
 
 A lógica de detecção não muda. Só o ambiente de execução.
 
----
-
-## Contexto de desenvolvimento
-
-Desenvolvido inteiramente via **Android + Termux**, sem computador,
-sem IDE profissional, sem infraestrutura dedicada.
+Desenvolvido inteiramente 
 
 O objetivo foi provar que é possível projetar arquitetura de segurança
 em camadas com as ferramentas disponíveis — não com as ideais.
 
----
 
 **Vinícios Silva** — Técnico em Redes de Computadores
 Goiana, Pernambuco · vinicios098silva@gmail.com
