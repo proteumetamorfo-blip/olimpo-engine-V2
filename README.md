@@ -1,12 +1,12 @@
-# ⚡ Olimpo Engine — V2
+# ⚡ Olimpo Engine
 ### Business Intelligence Automation Backend — IDS de Nível de Aplicação
 
-> Evolução do [Olimpo Engine V1](https://github.com/proteumetamorfo-blip/oleoduto-de-seguranca).
+> Evolução do [Olimpo Engine](https://github.com/proteumetamorfo-blip/oleoduto-de-seguranca).
 > Desenvolvido inteiramente via dispositivo móvel (Android + Termux),
 > Esse é o Dashboard do Olimpo Engine: https://proteumetamorfo-blip.github.io/olimpo-engine-V2/
 > O dashborard mostra registro de um ataque simulado. (Foram simulado um total de 97 tentativas de usuários malioso e usuários legítimos misturados. O código conseguiu captar todos os anômalos que implementei.
 
----
+
 
 ## O Problema
 
@@ -19,7 +19,6 @@ de rede sem ser detectado — porque a porta está aberta e o protocolo é váli
 O Olimpo Engine resolve isso na camada de aplicação: analisa o **padrão**
 das requisições, não apenas se elas chegaram.
 
----
 
 ## O que o sistema faz
 
