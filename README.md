@@ -1,26 +1,24 @@
-# ⚡ Olimpo Engine — V2
-### Business Intelligence Automation Backend — IDS de Nível de Aplicação
+# ⚡ Olimpo Engine - Business Intelligence Automation Backend.
 
-> Evolução do [Olimpo Engine V1](https://github.com/proteumetamorfo-blip/oleoduto-de-seguranca).
-> Desenvolvido inteiramente via dispositivo móvel (Android + Termux),
-> sem infraestrutura profissional, sem IDE, sem computador.
+Olimpo Engine é um sistema de monitoramento e detecção de comportamento suspeito em aplicações web.
 
----
+Enquanto firewalls tradicionais analisam portas e protocolos de rede, o Olimpo Engine observa o comportamento dos usuários dentro da aplicação, identificando padrões que podem indicar ataques, abuso de recursos ou tentativas de invasão.
 
-## O Problema
+Durante a simulação apresentada no dashboard, o sistema processou dezenas de eventos legítimos e maliciosos, identificando automaticamente atividades suspeitas como força bruta, varredura de rotas administrativas, uso de ferramentas de pentest automatizadas e métodos HTTP incomuns.
 
-Firewalls tradicionais protegem portas e protocolos.
-Eles não enxergam **comportamento**.
+O projeto foi desenvolvido integralmente em Python, utilizando SQLite para persistência dos eventos e um mecanismo próprio de regras para análise de tráfego em tempo real.
 
-Um atacante que tenta 50 logins errados pela porta 443 passa pelo firewall
-de rede sem ser detectado — porque a porta está aberta e o protocolo é válido.
+> Seu objetivo é demonstrar conceitos de:
 
-O Olimpo Engine resolve isso na camada de aplicação: analisa o **padrão**
-das requisições, não apenas se elas chegaram.
+• ETL aplicado a logs
+• Monitoramento de eventos
+• Rate limiting
+• Intrusion Detection Systems (IDS)
+• Processamento contínuo de dados
+• Arquitetura modular de segurança
 
----
 
-## O que o sistema faz
+# O Olimpo Engine trabalha assim:
 
 ```
 EVENTOS BRUTOS
@@ -47,13 +45,7 @@ EVENTOS BRUTOS
        │
        ▼
   DASHBOARD + RELATÓRIO HTML
-```
 
----
-
-## Resultados reais da simulação
-
-```
 Total eventos processados:   92
 Alertas CRITICAL:            29
 Alertas WARNING:              9
@@ -69,12 +61,11 @@ AMEAÇAS IDS:
   [HIGH]   104.21.45.33   → MALICIOUS_UA  (sqlmap detectado)
   [MEDIUM] 89.248.172.16  → ROUTE_SCAN    (/wp-admin, /.env, /phpmyadmin)
 ```
-
----
-
-## Estrutura do projeto
-
+*Para melhorar o entendendo do dashboard acesse o link: https://proteumetamorfo-blip.github.io/olimpo-engine/*
 ```
+# Estrutura do projeto
+
+
 olimpo-engine-V2/
 ├── pipeline.py            ← orquestrador principal (modo batch)
 ├── daemon.py              ← modo daemon (tempo real)
@@ -94,9 +85,10 @@ olimpo-engine-V2/
     └── report_exporter.py ← exportação de relatório em HTML
 ```
 
----
 
-## Tecnologias
+
+
+# Tecnologia utilizadas.
 
 | Tecnologia | Uso |
 |------------|-----|
@@ -106,81 +98,65 @@ olimpo-engine-V2/
 | ANSI escape codes | Dashboard sem dependências externas |
 | Termux (Android) | Ambiente de desenvolvimento |
 
-**Dependências externas: zero.**
 
----
 
-## Como rodar
 
+
+# Como rodar o Olimpo Engine.
+```
 ```bash
 # Pré-requisito no Termux
+
 pkg install python
 
 # 1. Gerar logs simulados
+
 timeout 15 python tools/log_generator.py --speed slow
 
 # 2. Processar e detectar
+
 python pipeline.py
 
 # 3. Ver painel de resultados
-python dashboard.py --once
-```
 
-### Modo tempo real (duas sessões)
+python dashboard.py --once
+
+
+# Modo tempo real (duas sessões)
+
 ```bash
 # Sessão 1
+
 python daemon.py
 
 # Sessão 2
+
 python tools/log_generator.py --speed normal
 ```
 
----
 
-## Regras IDS implementadas
+# Regras IDS implementadas.
 
 | Regra | O que detecta | Severidade |
-|-------|---------------|------------|
+
 | `RATE_LIMIT` | Mesmo IP acima do limite na janela de tempo | CRITICAL |
 | `PATH_TRAVERSAL` | `/../`, `/etc/passwd`, `/.git/config` | HIGH |
 | `ROUTE_SCAN` | `/wp-admin`, `/.env`, `/phpmyadmin` | MEDIUM |
 | `MALICIOUS_UA` | sqlmap, nikto, masscan, gobuster | HIGH |
 | `METHOD_ABUSE` | DELETE, TRACE em rotas comuns | MEDIUM |
 
----
 
-## Evolução em relação ao V1
-
-| V1 | V2 |
-|----|----|
-| Arquivos na raiz | Pastas separadas por responsabilidade |
-| Modo batch apenas | Modo daemon em tempo real |
-| Rate limit simples | Rate limit + 4 regras IDS |
-| Relatório no terminal | Dashboard CLI + relatório HTML |
-| Sem gerador de logs | Gerador de tráfego com ataques simulados |
-
----
-
-## O que falta para produção
+# Essas são as complementações que podem deixar o Olimpo Engine mais forte.
 
 - VPS Linux com Nginx em formato JSON
 - Daemon systemd para processo ativo 24/7
 - Integração com iptables/ufw para bloqueio na rede
 - Alertas via webhook (Telegram, email)
 
-A lógica de detecção não muda. Só o ambiente de execução.
+> Esse projeto foi totalmente desenvolvido inteiramente via (Android + Termux),
 
----
+O meu objetivo foi provar que é possível projetar arquitetura de segurança
+em camadas com as ferramentas disponíveis.
 
-## Contexto de desenvolvimento
-
-Desenvolvido inteiramente via **Android + Termux**, sem computador,
-sem IDE profissional, sem infraestrutura dedicada.
-
-O objetivo foi provar que é possível projetar arquitetura de segurança
-em camadas com as ferramentas disponíveis — não com as ideais.
-
----
 
 **Vinícios Silva** — Técnico em Redes de Computadores
-Goiana, Pernambuco · vinicios098silva@gmail.com
