@@ -1,170 +1,80 @@
-"""
-core/watcher.py
-───────────────
-Evolução 1 — Modo Daemon Local Simulado.
-
-Lê o arquivo de log gerado pelo log_generator.py linha a linha,
-de forma contínua (equivalente ao `tail -f` do Linux).
-Cada linha passa pelo pipeline ETL completo + IDS antes de ser
-persistida no SQLite.
-
-Comportamento idêntico ao que seria usado num VPS real com Nginx —
-a única diferença é o caminho do arquivo de log.
-"""
-
-import os
-import time
-import json
+import os, time, json
 from datetime import datetime
-
+from core.transformer    import transform
 from core.loader         import init_db, load_events, load_blacklist, load_quarantine, load_threats
+from core.geoip          import enrich_batch
 from security.rate_limit import analyze
 from security.ids_rules  import scan
 
-
-# ── Configuração ─────────────────────────────────────────────
 LOG_PATH       = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "access.json")
-FLUSH_INTERVAL = 8       # segundos entre processamentos do buffer
-SLEEP_INTERVAL = 0.05    # pausa quando não há novas linhas (segundos)
+FLUSH_INTERVAL = 8
+SLEEP_INTERVAL = 0.05
 
-# ── Cores ANSI ───────────────────────────────────────────────
 class C:
-    RESET  = "\033[0m"; BOLD = "\033[1m"; DIM = "\033[2m"
-    RED    = "\033[91m"; YELLOW = "\033[93m"
-    GREEN  = "\033[92m"; CYAN   = "\033[96m"
+    RESET="\033[0m"; BOLD="\033[1m"; DIM="\033[2m"
+    RED="\033[91m"; YELLOW="\033[93m"; GREEN="\033[92m"; CYAN="\033[96m"
 
+def _get_inode(path):
+    try: return os.stat(path).st_ino
+    except: return None
 
-def _wait_for_file(path: str, timeout: int = 30) -> bool:
-    """
-    Aguarda o arquivo de log ser criado (até `timeout` segundos).
-    Útil quando o daemon inicia antes do log_generator.
-    """
-    print(f"  {C.YELLOW}Aguardando arquivo de log:{C.RESET} {path}")
-    for _ in range(timeout * 10):
-        if os.path.exists(path):
-            return True
+def _wait_for_file(path, timeout=30):
+    print(f"  {C.YELLOW}Aguardando:{C.RESET} {path}")
+    for _ in range(timeout*10):
+        if os.path.exists(path): return True
         time.sleep(0.1)
     return False
 
-
-def _flush_buffer(buffer: list[dict]) -> dict:
-    """
-    Processa um lote de eventos brutos pelo pipeline completo.
-    Retorna um resumo do lote para logging.
-    """
-    if not buffer:
-        return {}
-
-    # ── ETL ──────────────────────────────────────────────────
+def _flush_buffer(buffer):
+    if not buffer: return {}
     clean, quarantined = transform(buffer)
-
-    # ── Rate Limit ───────────────────────────────────────────
+    clean              = enrich_batch(clean)
     flagged, blacklisted = analyze(clean)
-
-    # ── IDS Rules ────────────────────────────────────────────
-    enriched, threats = scan(flagged)
-
-    # ── Persistência ─────────────────────────────────────────
-    load_events(enriched)
-    load_blacklist(blacklisted)
-    load_quarantine(quarantined)
-    load_threats(threats)
-
-    # ── Alertas no terminal ───────────────────────────────────
+    enriched, threats    = scan(flagged)
+    load_events(enriched); load_blacklist(blacklisted)
+    load_quarantine(quarantined); load_threats(threats)
     for entry in blacklisted:
-        print(
-            f"  {C.RED}[RATE_LIMIT CRITICAL]{C.RESET} "
-            f"IP {C.BOLD}{entry['ip']}{C.RESET} bloqueado — {entry['reason']}"
-        )
-
+        print(f"  {C.RED}[CRITICAL]{C.RESET} IP {C.BOLD}{entry['ip']}{C.RESET} — {entry['reason']}")
     for threat in threats:
-        sev_color = C.RED if threat["severity"] == "HIGH" else C.YELLOW
-        print(
-            f"  {sev_color}[IDS {threat['severity']}]{C.RESET} "
-            f"IP {C.BOLD}{threat['ip']}{C.RESET} | "
-            f"Regra: {threat['rule']} | {threat['detail'][:60]}"
-        )
+        sc = C.RED if threat["severity"]=="HIGH" else C.YELLOW
+        print(f"  {sc}[IDS {threat['severity']}]{C.RESET} {threat['ip']} | {threat['rule']}")
+    return {"total":len(buffer),"clean":len(clean),"quarantined":len(quarantined),"blacklisted":len(blacklisted),"threats":len(threats)}
 
-    return {
-        "total":       len(buffer),
-        "clean":       len(clean),
-        "quarantined": len(quarantined),
-        "blacklisted": len(blacklisted),
-        "threats":     len(threats),
-    }
-
-
-def watch() -> None:
-    """
-    Loop principal do daemon.
-    Inicia monitoramento contínuo do arquivo de log.
-    """
+def watch():
     init_db()
-
     print(f"\n{C.CYAN}{C.BOLD}  OLIMPO ENGINE — DAEMON V2{C.RESET}")
-    print(f"  {C.DIM}Motor IDS + Rate Limit + ETL em tempo real{C.RESET}")
-    print(f"  {C.DIM}Pressione Ctrl+C para encerrar.{C.RESET}\n")
-
+    print(f"  {C.DIM}Rate Limit dinamico · XSS/SQLi · GeoIP · Log Rotation{C.RESET}\n")
     if not _wait_for_file(LOG_PATH):
-        print(f"  {C.RED}ERRO:{C.RESET} Arquivo não encontrado após 30s.")
-        print(f"  Execute primeiro: {C.BOLD}python tools/log_generator.py{C.RESET}\n")
-        return
-
-    print(f"  {C.GREEN}✔{C.RESET} Monitorando: {C.BOLD}{LOG_PATH}{C.RESET}\n")
-
-    buffer: list[dict] = []
-    last_flush = time.time()
-    lines_read = 0
-    batches    = 0
-
-    with open(LOG_PATH, "r") as f:
-        # Vai para o fim — não reprocessa histórico existente
-        f.seek(0, 2)
-
+        print(f"  {C.RED}Arquivo nao encontrado.{C.RESET}\n"); return
+    print(f"  {C.GREEN}Monitorando:{C.RESET} {LOG_PATH}\n")
+    buffer=[]; last_flush=time.time(); lines_read=0; batches=0
+    current_inode = _get_inode(LOG_PATH)
+    with open(LOG_PATH,"r") as f:
+        f.seek(0,2)
         try:
             while True:
+                new_inode = _get_inode(LOG_PATH)
+                if new_inode and new_inode != current_inode:
+                    print(f"\n  {C.YELLOW}[LOG ROTATION]{C.RESET} Reabrindo arquivo...")
+                    if buffer: _flush_buffer(buffer); buffer.clear()
+                    f.close(); f = open(LOG_PATH,"r")
+                    current_inode = new_inode
                 line = f.readline()
-
                 if line:
                     line = line.strip()
                     if line:
-                        try:
-                            event = json.loads(line)
-                            buffer.append(event)
-                            lines_read += 1
-                        except json.JSONDecodeError:
-                            pass  # linha malformada — ignora silenciosamente
-
-                # Flush periódico do buffer
+                        try: buffer.append(json.loads(line)); lines_read+=1
+                        except: pass
                 now = time.time()
-                if now - last_flush >= FLUSH_INTERVAL:
+                if now-last_flush >= FLUSH_INTERVAL:
                     if buffer:
-                        batches += 1
+                        batches+=1
                         ts = datetime.utcnow().strftime("%H:%M:%S")
-                        print(f"\n  {C.CYAN}[{ts}] Processando lote #{batches} "
-                              f"({len(buffer)} eventos){C.RESET}")
-
-                        result = _flush_buffer(buffer)
-                        buffer.clear()
-
-                        print(
-                            f"  {C.DIM}→ Limpos: {result['clean']} | "
-                            f"Quarentena: {result['quarantined']} | "
-                            f"Bloqueios: {result['blacklisted']} | "
-                            f"Ameaças IDS: {result['threats']}{C.RESET}"
-                        )
-                    last_flush = now
-
-                else:
-                    time.sleep(SLEEP_INTERVAL)
-
+                        print(f"\n  {C.CYAN}[{ts}] Lote #{batches} ({len(buffer)} eventos){C.RESET}")
+                        r = _flush_buffer(buffer); buffer.clear()
+                        print(f"  {C.DIM}Limpos:{r['clean']} Quarentena:{r['quarantined']} Bloqueios:{r['blacklisted']} IDS:{r['threats']}{C.RESET}")
+                    last_flush=now
+                else: time.sleep(SLEEP_INTERVAL)
         except KeyboardInterrupt:
-            # Processa o que sobrou no buffer antes de encerrar
-            if buffer:
-                print(f"\n  {C.YELLOW}Processando buffer final...{C.RESET}")
-                _flush_buffer(buffer)
-
-            print(
-                f"\n  {C.GREEN}Daemon encerrado.{C.RESET} "
-                f"Total lido: {lines_read} linhas | {batches} lotes.\n"
-            )
+            if buffer: _flush_buffer(buffer)
+            print(f"\n  {C.GREEN}Daemon encerrado.{C.RESET} {lines_read} linhas | {batches} lotes.\n")
