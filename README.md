@@ -61,7 +61,7 @@ AMEAÇAS IDS:
   [HIGH]   104.21.45.33   → MALICIOUS_UA  (sqlmap detectado)
   [MEDIUM] 89.248.172.16  → ROUTE_SCAN    (/wp-admin, /.env, /phpmyadmin)
 ```
-*Para melhorar o entendendo do dashboard acesse o link: https://proteumetamorfo-blip.github.io/olimpo-engine/*
+*Para melhorar o entendendo visual do dashboard acesse o link: https://proteumetamorfo-blip.github.io/olimpo-engine/*
 ```
 # Estrutura do projeto
 
@@ -158,5 +158,10 @@ python tools/log_generator.py --speed normal
 O meu objetivo foi provar que é possível projetar arquitetura de segurança
 em camadas com as ferramentas disponíveis.
 
+# Desenvolvidor
 
-**Vinícios Silva** — Técnico em Redes de Computadores
+
+**Vinícios Silva — Técnico em Redes de Computadores**
+Goiana, Pernambuco · vinicios098silva@gmail.com
+LinkedIn · GitHub
+
