@@ -64,4 +64,5 @@ EVENTOS BRUTOS
 > Vinícios Silva — Técnico em Redes de Computadores:
 Goiana, Pernambuco · vinicios098silva@gmail.com
 Esse projeto foi totalmente desenvolvido inteiramente via (Android + Termux).
+
 O meu objetivo foi aprender a estruturar um ecossistema digital seguro.
