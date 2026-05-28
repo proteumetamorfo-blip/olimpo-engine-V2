@@ -8,15 +8,6 @@ Durante a simulação apresentada no dashboard, o sistema processou dezenas de e
 
 O projeto foi desenvolvido integralmente em Python, utilizando SQLite para persistência dos eventos e um mecanismo próprio de regras para análise de tráfego em tempo real.
 
-> Seu objetivo é demonstrar conceitos de:
-
-• ETL aplicado a logs
-• Monitoramento de eventos
-• Rate limiting
-• Intrusion Detection Systems (IDS)
-• Processamento contínuo de dados
-• Arquitetura modular de segurança
-
 
 # O Olimpo Engine trabalha assim:
 
@@ -161,7 +152,6 @@ em camadas com as ferramentas disponíveis.
 # Desenvolvidor
 
 
-**Vinícios Silva — Técnico em Redes de Computadores**
+> Vinícios Silva — Técnico em Redes de Computadores:
 Goiana, Pernambuco · vinicios098silva@gmail.com
-LinkedIn · GitHub
 
