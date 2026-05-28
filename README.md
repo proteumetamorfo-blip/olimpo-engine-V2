@@ -65,4 +65,4 @@ EVENTOS BRUTOS
 Goiana, Pernambuco · vinicios098silva@gmail.com
 Esse projeto foi totalmente desenvolvido inteiramente via (Android + Termux).
 
-O meu objetivo foi aprender a estruturar um ecossistema digital seguro.
+O meu objetivo foi aprender a estruturar um ecossistema digital seguro do zero e entender os conceitos de um firewall inteligente na prática.
