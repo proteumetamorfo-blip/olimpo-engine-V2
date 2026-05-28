@@ -37,36 +37,12 @@ EVENTOS BRUTOS
        ▼
   DASHBOARD + RELATÓRIO HTML
 ```
+
 > Para acessar o dashboard que é gerado no final de todo esse processo acesse o link: https://proteumetamorfo-blip.github.io/olimpo-engine/*
-
-# Estrutura do projeto
-
-'''
-olimpo-engine-V2/
-├── pipeline.py            ← orquestrador principal (modo batch)
-├── daemon.py              ← modo daemon (tempo real)
-├── dashboard.py           ← painel CLI ao vivo
-│
-├── core/
-│   ├── transformer.py     ← ETL: limpeza, validação, normalização
-│   ├── loader.py          ← persistência SQLite com 4 tabelas indexadas
-│   └── watcher.py         ← leitura contínua de log
-│
-├── security/
-│   ├── rate_limit.py      ← algoritmo sliding window
-│   └── ids_rules.py       ← motor de regras IDS com regex compiladas
-│
-└── tools/
-    ├── log_generator.py   ← gerador de tráfego simulado com ataques reais
-    └── report_exporter.py ← exportação de relatório em HTML
-```
-
-
-
 
 # Tecnologia Utilizadas.
 
-'''
+```
 | Tecnologia | Uso |
 |------------|-----|
 | Python 3.10+ | Lógica principal |
@@ -74,24 +50,18 @@ olimpo-engine-V2/
 | Regex compilada | Performance nas regras IDS |
 | ANSI escape codes | Dashboard sem dependências externas |
 | Termux (Android) | Ambiente de desenvolvimento |
-'''
+```
 
-# Essas são as complementações que podem deixar o Olimpo Engine mais forte.
-
+# Essas são as complementações que podem deixar o Olimpo Engine mais forte
+```
 - VPS Linux com Nginx em formato JSON
 - Daemon systemd para processo ativo 24/7
 - Integração com iptables/ufw para bloqueio na rede
 - Alertas via webhook (Telegram, email)
-
-> Esse projeto foi totalmente desenvolvido inteiramente via (Android + Termux),
-
-O meu objetivo foi provar que é possível projetar arquitetura de segurança
-em camadas com as ferramentas disponíveis.
-
-
+```
 # Desenvolvidor
-
 
 > Vinícios Silva — Técnico em Redes de Computadores:
 Goiana, Pernambuco · vinicios098silva@gmail.com
-
+Esse projeto foi totalmente desenvolvido inteiramente via (Android + Termux).
+O meu objetivo foi aprender a estruturar um ecossistema digital seguro.
