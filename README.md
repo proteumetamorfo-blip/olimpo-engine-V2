@@ -38,7 +38,7 @@ EVENTOS BRUTOS
   DASHBOARD + RELATÓRIO HTML
 ```
 
-> Para acessar o dashboard que é gerado no final de todo esse processo acesse o link: https://proteumetamorfo-blip.github.io/olimpo-engine/*
+> Para acessar o dashboard que é gerado no final de todo esse processo acesse o link: https://proteumetamorfo-blip.github.io/olimpo-engine/
 
 # Tecnologia Utilizadas.
 
