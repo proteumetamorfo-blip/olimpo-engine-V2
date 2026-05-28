@@ -1,4 +1,4 @@
-"""
+["""
 core/loader.py
 ──────────────
 Camada L do ETL — Carga no banco SQLite.
@@ -20,10 +20,17 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "..", "db", "olimpo_audit.db")
 
 
 def _get_connection() -> sqlite3.Connection:
-    """Abre conexão com o SQLite e habilita chaves estrangeiras."""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)  # cria db/ se não existir
+    """
+    Abre conexão com o SQLite.
+    WAL Mode ativado: permite leituras e escritas simultâneas sem travar
+    o banco inteiro — essencial para o daemon processar centenas de
+    eventos por segundo sem gargalo.
+    """
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA journal_mode = WAL")   # ← V2: Write-Ahead Logging
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA synchronous = NORMAL")  # ← V2: performance sem perder durabilidade
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -42,6 +49,9 @@ def init_db() -> None:
         timestamp   TEXT    NOT NULL,
         alert_level TEXT    NOT NULL DEFAULT 'OK',
         ids_tags    TEXT    NOT NULL DEFAULT '',
+        geo_country TEXT    NOT NULL DEFAULT '',
+        geo_city    TEXT    NOT NULL DEFAULT '',
+        geo_code    TEXT    NOT NULL DEFAULT '',
         processed_at TEXT   NOT NULL
     );
 
@@ -90,14 +100,17 @@ def load_events(flagged_events: list[dict]) -> int:
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     rows = [
         (ev["ip"], ev["event"], ev["route"], ev["timestamp"],
-         ev.get("alert_level", "OK"), ev.get("ids_tags", ""), now)
+         ev.get("alert_level", "OK"), ev.get("ids_tags", ""),
+         ev.get("geo_country", ""), ev.get("geo_city", ""),
+         ev.get("geo_code", ""), now)
         for ev in flagged_events
     ]
     with _get_connection() as conn:
         conn.executemany(
             "INSERT INTO events_log "
-            "(ip, event, route, timestamp, alert_level, ids_tags, processed_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "(ip, event, route, timestamp, alert_level, ids_tags, "
+            "geo_country, geo_city, geo_code, processed_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             rows,
         )
     return len(rows)
@@ -183,7 +196,7 @@ def live_stats() -> dict:
 
         recent  = conn.execute(
             "SELECT ip, event, route, alert_level, ids_tags, timestamp "
-            "FROM events_log ORDER BY id DESC LIMIT 8"
+            "FROM events_log ORDER BY id DESC LIMIT 20"
         ).fetchall()
 
         bl_rows = conn.execute(
@@ -202,26 +215,4 @@ def live_stats() -> dict:
         "recent_events":  [dict(r) for r in recent],
         "blacklist":      [dict(r) for r in bl_rows],
         "recent_threats": [dict(r) for r in thr_rows],
-    }
-    """
-    Retorna um resumo do estado atual do banco para exibição no terminal.
-    """
-    with _get_connection() as conn:
-        total_events    = conn.execute("SELECT COUNT(*) FROM events_log").fetchone()[0]
-        critical_events = conn.execute(
-            "SELECT COUNT(*) FROM events_log WHERE alert_level = 'CRITICAL'"
-        ).fetchone()[0]
-        blacklisted     = conn.execute("SELECT COUNT(*) FROM blacklist").fetchone()[0]
-        quarantined     = conn.execute("SELECT COUNT(*) FROM quarantine_log").fetchone()[0]
-
-        blacklist_rows  = conn.execute(
-            "SELECT ip, event_type, count, reason FROM blacklist"
-        ).fetchall()
-
-    return {
-        "total_events":    total_events,
-        "critical_events": critical_events,
-        "blacklisted_ips": blacklisted,
-        "quarantined":     quarantined,
-        "blacklist_detail": [dict(r) for r in blacklist_rows],
-    }
+    }]
